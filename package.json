@@ -1,6 +1,6 @@
 {
   "name": "directorio-parroquial",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Sistema de domicilios parroquiales original empaquetado para Windows",
   "private": true,
   "author": "Oficina parroquial",
@@ -34,7 +34,8 @@
       "package.json",
       "assets/**/*",
       "preload.js",
-      "printers.js"
+      "printers.js",
+      "sync.js"
     ],
     "win": {
       "target": [

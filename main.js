@@ -1,9 +1,10 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, dialog, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, dialog, screen, ipcMain, safeStorage } = require('electron');
 const path = require('node:path');
 const { startUpdates } = require('./updates');
 const { registerPrinterHandlers } = require('./printers');
+const { registerSyncHandlers } = require('./sync');
 
 // La misma carpeta de datos se usa en desarrollo y en la aplicación instalada.
 app.setPath('userData', process.env.DIRECTORIO_PARROQUIAL_DATA_DIR
@@ -26,6 +27,7 @@ if (!hasLock) {
 
   app.whenReady().then(() => {
     registerPrinterHandlers(ipcMain, path.join(app.getPath('userData'), 'printer-settings.json'), () => mainWindow);
+    registerSyncHandlers(ipcMain, app.getPath('userData'), safeStorage, () => mainWindow);
     ipcMain.handle('app:version', event => {
       if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame) throw Error('Solicitud no autorizada.');
       return app.getVersion();
