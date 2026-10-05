@@ -26,6 +26,10 @@ if (!hasLock) {
 
   app.whenReady().then(() => {
     registerPrinterHandlers(ipcMain, path.join(app.getPath('userData'), 'printer-settings.json'), () => mainWindow);
+    ipcMain.handle('app:version', event => {
+      if (!mainWindow || event.sender !== mainWindow.webContents || event.senderFrame !== mainWindow.webContents.mainFrame) throw Error('Solicitud no autorizada.');
+      return app.getVersion();
+    });
     createWindow();
     startUpdates(app);
   }).catch(reportError);
@@ -43,7 +47,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: Math.min(1280, width),
     height: Math.min(900, height),
-    title: 'Directorio Parroquial',
+    title: `Directorio de Domicilios — v${app.getVersion()}`,
     icon: path.join(__dirname, 'assets', 'templo.ico'),
     show: false,
     autoHideMenuBar: true,
@@ -56,6 +60,7 @@ function createWindow() {
     }
   });
   mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.webContents.on('page-title-updated', event => event.preventDefault());
   mainWindow.on('closed', () => { mainWindow = null; });
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', event => event.preventDefault());
