@@ -52,7 +52,7 @@ function createPrinterService(settingsFile, getWindow) {
           scaleFactor: 100,
           margins: { marginType: 'none' },
           pageSize: { width: 90000, height: 165000 },
-          landscape: true
+          landscape: false
         }, (success, reason) => resolve({ success, message: success ? 'Sobres enviados a la impresora.' : `No se pudo imprimir: ${reason || 'revisa la impresora.'}` }));
       });
     } catch (error) {
