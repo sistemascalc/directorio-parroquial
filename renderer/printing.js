@@ -16,6 +16,28 @@
   const save = document.getElementById('savePrinter');
   window.isEnvelopePrinting = () => printing;
 
+  function fitEnvelopes() {
+    for (const recipient of document.querySelectorAll('#printRoot .print-recipient')) {
+      const measure=document.createElement('div');
+      measure.style.cssText='position:fixed;left:-10000px;top:0;visibility:hidden;width:58mm;line-height:1.2;color:#111;overflow-wrap:anywhere';
+      measure.style.fontFamily=getComputedStyle(document.body).fontFamily;
+      measure.innerHTML=recipient.innerHTML;
+      for(const child of measure.children) {
+        const name=child.className;
+        if(name==='print-name') child.style.cssText+=';font-size:11pt;font-weight:900;text-transform:uppercase;margin-bottom:2mm';
+        if(name==='print-address') child.style.cssText+=';font-size:10pt;font-weight:800';
+        if(name==='print-sector') child.style.cssText+=';font-size:10pt;margin-top:1.5mm';
+        if(name==='print-parish') child.style.cssText+=';font-size:11pt;font-weight:900;margin-top:2mm';
+      }
+      measure.firstElementChild.style.cssText+=';font-size:11pt!important;text-transform:none!important;margin-bottom:1mm!important';
+      document.body.append(measure);
+      const maximum=42*96/25.4;
+      const scale=Math.min(1,maximum/measure.getBoundingClientRect().height);
+      measure.remove();
+      recipient.style.setProperty('transform',`scale(${scale})`,'important');
+    }
+  }
+
   async function refreshLabel() {
     if (!api) { button.hidden = true; return; }
     try {
@@ -64,7 +86,7 @@
 
   window.requestEnvelopePrint = async function () {
     if (printing) return;
-    if (!api) { window.print(); return; }
+    if (!api) { fitEnvelopes(); window.print(); return; }
     printing = true;
     try {
       const info = await api.list();
@@ -72,6 +94,7 @@
         if (!await choosePrinter()) return;
       }
       if (document.fonts) await document.fonts.ready;
+      fitEnvelopes();
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const result = await api.print();
       showToast(result.message);
