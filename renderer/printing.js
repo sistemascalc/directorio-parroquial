@@ -14,9 +14,11 @@
   const status = document.getElementById('printerStatus');
   const error = document.getElementById('printerSettingsError');
   const save = document.getElementById('savePrinter');
+  const offsetX = document.getElementById('printOffsetX');
+  const offsetY = document.getElementById('printOffsetY');
   window.isEnvelopePrinting = () => printing;
 
-  function fitEnvelopes() {
+  function fitEnvelopes(layout = {offsetX:0,offsetY:-12}) {
     for (const recipient of document.querySelectorAll('#printRoot .print-recipient')) {
       const measure=document.createElement('div');
       measure.style.cssText='position:fixed;left:-10000px;top:0;visibility:hidden;width:58mm;line-height:1.2;color:#111;overflow-wrap:anywhere';
@@ -35,6 +37,8 @@
       const scale=Math.min(1,maximum/measure.getBoundingClientRect().height);
       measure.remove();
       recipient.style.setProperty('transform',`scale(${scale})`,'important');
+      recipient.style.setProperty('left', `${60+layout.offsetX}mm`, 'important');
+      recipient.style.setProperty('top', `${42+layout.offsetY}mm`, 'important');
     }
   }
 
@@ -50,7 +54,7 @@
   async function choosePrinter() {
     if (dialog.open) return false;
     error.textContent = '';
-    const { printers, selected } = await api.list();
+    const { printers, selected, layout } = await api.list();
     select.replaceChildren();
     for (const printer of printers) {
       const option = document.createElement('option');
@@ -64,6 +68,9 @@
       if (systemDefault) select.value = systemDefault.name;
     }
     save.disabled = !printers.length;
+    const initial = select.value === selected && layout ? layout : {offsetX: select.value === 'Canon GX7000 series' ? -60 : 0, offsetY:-12};
+    offsetX.value = initial.offsetX / 10;
+    offsetY.value = initial.offsetY / 10;
     if (!printers.length) error.textContent = 'No hay impresoras instaladas. Añade una en la configuración de Windows y vuelve a intentar.';
     dialog.showModal();
     return new Promise(resolve => { pendingSelection = resolve; });
@@ -76,25 +83,27 @@
   save.addEventListener('click', async () => {
     save.disabled = true;
     try {
-      await api.save(select.value);
+      await api.save({deviceName:select.value,offsetX:Number(offsetX.value)*10,offsetY:Number(offsetY.value)*10});
       dialog.close('saved');
       refreshLabel();
     } catch (e) { error.textContent = e.message; }
     finally { save.disabled = select.options.length === 0; }
   });
   button.addEventListener('click', () => choosePrinter().catch(e => showToast(e.message)));
+  select.addEventListener('change', () => {offsetX.value=select.value === 'Canon GX7000 series' ? -6 : 0;offsetY.value=-1.2;});
 
   window.requestEnvelopePrint = async function () {
     if (printing) return;
     if (!api) { fitEnvelopes(); window.print(); return; }
     printing = true;
     try {
-      const info = await api.list();
+      let info = await api.list();
       if (!info.selected || !info.printers.some(p => p.name === info.selected)) {
         if (!await choosePrinter()) return;
+        info = await api.list();
       }
       if (document.fonts) await document.fonts.ready;
-      fitEnvelopes();
+      fitEnvelopes(info.layout);
       await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
       const result = await api.print();
       showToast(result.message);

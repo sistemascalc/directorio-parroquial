@@ -706,6 +706,11 @@
     <p>Selecciona una vez la impresora para tus sobres de 16.5 × 9 cm. La app la recordará al cerrar y al actualizarse.</p>
     <label for="savedPrinter">Impresora instalada en Windows</label>
     <select id="savedPrinter" style="width:100%;margin:12px 0;padding:10px"></select>
+    <label for="printOffsetX">Mover a derecha / izquierda (cm)</label>
+    <input id="printOffsetX" type="number" min="-6" max="3.7" step="0.1" style="width:100%;margin:8px 0;padding:10px" />
+    <label for="printOffsetY">Mover hacia abajo / arriba (cm)</label>
+    <input id="printOffsetY" type="number" min="-4.2" max="0" step="0.1" style="width:100%;margin:8px 0;padding:10px" />
+    <p style="font-size:.85rem">Los números negativos mueven a la izquierda o hacia arriba. El ajuste se guarda en esta computadora. Para Canon GX7000 se aplica la corrección del sobre de referencia.</p>
     <p id="printerSettingsError" role="alert" style="color:#a51d1d"></p>
     <div style="display:flex;gap:10px;justify-content:flex-end">
       <button id="cancelPrinter" class="btn btn-secondary" type="button">Cancelar</button>
