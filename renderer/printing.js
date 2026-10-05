@@ -1,6 +1,11 @@
 'use strict';
 (function () {
   const api = window.parishPrinter;
+  if (api?.version) api.version().then(version => {
+    const label = document.getElementById('appVersion');
+    label.textContent = `Versión ${version}`;
+    label.hidden = false;
+  }).catch(() => {});
   let printing = false;
   let pendingSelection = null;
   const button = document.getElementById('printerSettingsButton');
