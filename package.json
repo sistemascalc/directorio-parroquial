@@ -1,6 +1,6 @@
 {
   "name": "directorio-parroquial",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Sistema de domicilios parroquiales original empaquetado para Windows",
   "private": true,
   "author": "Oficina parroquial",
@@ -31,7 +31,8 @@
       "updates.js",
       "update-source.json",
       "renderer/**/*",
-      "package.json"
+      "package.json",
+      "assets/**/*"
     ],
     "win": {
       "target": [
@@ -43,7 +44,8 @@
         }
       ],
       "artifactName": "Directorio-Parroquial-Instalador-${version}-${arch}.${ext}",
-      "signAndEditExecutable": false
+      "signAndEditExecutable": true,
+      "icon": "assets/templo.ico"
     },
     "nsis": {
       "oneClick": false,

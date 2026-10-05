@@ -42,6 +42,7 @@ function createWindow() {
     width: Math.min(1280, width),
     height: Math.min(900, height),
     title: 'Directorio Parroquial',
+    icon: path.join(__dirname, 'assets', 'templo.ico'),
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
