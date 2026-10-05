@@ -103,7 +103,9 @@ function createSyncService(directory, safeStorage, request=fetch) {
           if(!rows?.length)continue;
           shared.revision++;
         }
-        state.base=merged.data;state.revision=shared.revision;delete state.conflictSignature;write();
+        const oldBase=state.base,oldRevision=state.revision;
+        state.base=merged.data;state.revision=shared.revision;delete state.conflictSignature;
+        try { write(); } catch(error) {state.base=oldBase;state.revision=oldRevision;throw error;}
         return {enabled:true,email:state.email,data:validateSnapshot(merged.data)};
       }
       throw Error('Otro equipo está guardando cambios. Se volverá a intentar.');
