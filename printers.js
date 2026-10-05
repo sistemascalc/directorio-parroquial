@@ -51,8 +51,8 @@ function createPrinterService(settingsFile, getWindow) {
           duplexMode: 'simplex',
           scaleFactor: 100,
           margins: { marginType: 'none' },
-          pageSize: { width: 160000, height: 95000 },
-          landscape: false
+          pageSize: { width: 95000, height: 160000 },
+          landscape: true
         }, (success, reason) => resolve({ success, message: success ? 'Sobres enviados a la impresora.' : `No se pudo imprimir: ${reason || 'revisa la impresora.'}` }));
       });
     } catch (error) {
