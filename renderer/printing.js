@@ -25,7 +25,7 @@
       for(const child of measure.children) {
         const name=child.className;
         if(name==='print-name') child.style.cssText+=';font-size:11pt;font-weight:900;text-transform:uppercase;margin-bottom:2mm';
-        if(name==='print-address') child.style.cssText+=';font-size:10pt;font-weight:800';
+        if(name==='print-address') child.style.cssText+=';font-size:10pt;font-weight:800;white-space:pre-line';
         if(name==='print-sector') child.style.cssText+=';font-size:10pt;margin-top:1.5mm';
         if(name==='print-parish') child.style.cssText+=';font-size:11pt;font-weight:900;margin-top:2mm';
       }
