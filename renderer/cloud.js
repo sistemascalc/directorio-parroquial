@@ -45,7 +45,11 @@
       if(!response.enabled){enabled=false;status.textContent='Sincronización desactivada';return;}
       const current=store.snapshot();
       const merged=DirectoryMerge.mergeSnapshots(before,current,response.data);
-      if(merged.conflicts.length){status.textContent='Hay cambios simultáneos. Se conservan localmente para volver a sincronizar.';return;}
+      if(merged.conflicts.length){
+        await api.disconnect(); enabled=false;
+        status.textContent='Sincronización pausada por cambios simultáneos. Los cambios locales se conservan. Reconecta para descargar el directorio compartido con respaldo.';
+        return;
+      }
       if(JSON.stringify(current)!==JSON.stringify(merged.data))store.apply(merged.data);
       status.textContent='Sincronizado · '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'});
       if(JSON.stringify(before)!==JSON.stringify(current))schedule();
