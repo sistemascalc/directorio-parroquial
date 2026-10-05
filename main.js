@@ -1,8 +1,9 @@
 'use strict';
 
-const { app, BrowserWindow, Menu, dialog, screen } = require('electron');
+const { app, BrowserWindow, Menu, dialog, screen, ipcMain } = require('electron');
 const path = require('node:path');
 const { startUpdates } = require('./updates');
+const { registerPrinterHandlers } = require('./printers');
 
 // La misma carpeta de datos se usa en desarrollo y en la aplicación instalada.
 app.setPath('userData', process.env.DIRECTORIO_PARROQUIAL_DATA_DIR
@@ -24,6 +25,7 @@ if (!hasLock) {
   });
 
   app.whenReady().then(() => {
+    registerPrinterHandlers(ipcMain, path.join(app.getPath('userData'), 'printer-settings.json'), () => mainWindow);
     createWindow();
     startUpdates(app);
   }).catch(reportError);
@@ -46,6 +48,7 @@ function createWindow() {
     show: false,
     autoHideMenuBar: true,
     webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
@@ -54,8 +57,8 @@ function createWindow() {
   });
   mainWindow.once('ready-to-show', () => mainWindow.show());
   mainWindow.on('closed', () => { mainWindow = null; });
-  // Se carga el HTML original sin inyecciones, transformaciones ni reemplazos.
-  // window.print() conserva el diálogo de impresión nativo de Chromium/Electron.
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  mainWindow.webContents.on('will-navigate', event => event.preventDefault());
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html')).catch(reportError);
 }
 
