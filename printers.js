@@ -4,6 +4,14 @@ const path = require('node:path');
 
 function createPrinterService(settingsFile, getWindow) {
   let printing = false;
+  function readLayout(deviceName) {
+    const defaults = deviceName === 'Canon GX7000 series' ? { offsetX: -60, offsetY: -12 } : { offsetX: 0, offsetY: -12 };
+    try {
+      const saved = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
+      if (saved.deviceName === deviceName && Number.isFinite(saved.offsetX) && Number.isFinite(saved.offsetY) && saved.offsetX >= -60 && saved.offsetX <= 37 && saved.offsetY >= -42 && saved.offsetY <= 0) return {offsetX:saved.offsetX,offsetY:saved.offsetY};
+    } catch {}
+    return defaults;
+  }
   function readName() {
     try {
       const value = JSON.parse(fs.readFileSync(settingsFile, 'utf8'));
@@ -18,16 +26,23 @@ function createPrinterService(settingsFile, getWindow) {
     const selected = readName();
     return {
       selected,
+      layout: readLayout(selected),
       printers: printers.map(p => ({ name: p.name, displayName: p.displayName || p.name, isDefault: p.isDefault }))
     };
   }
   async function save(deviceName) {
+    let layout;
+    if (deviceName && typeof deviceName === 'object') {
+      layout = {offsetX:deviceName.offsetX,offsetY:deviceName.offsetY};
+      deviceName = deviceName.deviceName;
+      if (!Number.isFinite(layout.offsetX) || !Number.isFinite(layout.offsetY) || layout.offsetX < -60 || layout.offsetX > 37 || layout.offsetY < -42 || layout.offsetY > 0) throw Error('La posición queda fuera del sobre.');
+    }
     const info = await list();
     if (typeof deviceName !== 'string' || !info.printers.some(p => p.name === deviceName)) {
       throw Error('Selecciona una impresora instalada en Windows.');
     }
     fs.mkdirSync(path.dirname(settingsFile), { recursive: true });
-    fs.writeFileSync(settingsFile + '.tmp', JSON.stringify({ deviceName }, null, 2));
+    fs.writeFileSync(settingsFile + '.tmp', JSON.stringify({ deviceName, ...(layout || readLayout(deviceName)) }, null, 2));
     fs.renameSync(settingsFile + '.tmp', settingsFile);
     return { deviceName };
   }
